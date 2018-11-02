@@ -1,7 +1,7 @@
 // @flow
 
 import {run} from "./testUtil";
-import analyze, {help} from "./analyze";
+import analyzeCommand, {help} from "./analyze";
 
 describe("cli/analyze", () => {
   describe("'help' command", () => {
@@ -27,7 +27,7 @@ describe("cli/analyze", () => {
 
   describe("'analyze' command", () => {
     it("prints usage with '--help'", async () => {
-      expect(await run(analyze, ["--help"])).toEqual({
+      expect(await run(analyzeCommand, ["--help"])).toEqual({
         exitCode: 0,
         stdout: expect.arrayContaining([
           expect.stringMatching(/^usage: sourcecred analyze/),
@@ -37,7 +37,7 @@ describe("cli/analyze", () => {
     });
 
     it("errors if no repository is specified", async () => {
-      expect(await run(analyze, [])).toEqual({
+      expect(await run(analyzeCommand, [])).toEqual({
         exitCode: 1,
         stdout: [],
         stderr: [
@@ -48,7 +48,7 @@ describe("cli/analyze", () => {
     });
 
     it("errors if multiple repositories are specified", async () => {
-      expect(await run(analyze, ["foo/bar", "zoink/zod"])).toEqual({
+      expect(await run(analyzeCommand, ["foo/bar", "zoink/zod"])).toEqual({
         exitCode: 1,
         stdout: [],
         stderr: [
@@ -59,7 +59,7 @@ describe("cli/analyze", () => {
     });
 
     it("errors if provided a invalid repository", async () => {
-      expect(await run(analyze, ["--zoomzoom"])).toEqual({
+      expect(await run(analyzeCommand, ["--zoomzoom"])).toEqual({
         exitCode: 1,
         stdout: [],
         stderr: [
@@ -69,7 +69,7 @@ describe("cli/analyze", () => {
     });
 
     it("prints a not-yet-implemented message for a valid repo", async () => {
-      expect(await run(analyze, ["sourcecred/example-github"])).toEqual({
+      expect(await run(analyzeCommand, ["sourcecred/example-github"])).toEqual({
         exitCode: 0,
         stdout: [
           "would analyze sourcecred/example-github, but not yet implemented",

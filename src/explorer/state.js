@@ -57,11 +57,15 @@ export function createStateTransitionMachine(
   getState: () => AppState,
   setState: (AppState) => void
 ): StateTransitionMachine {
+  const modifiedPagerank = async (g, ew, o) => {
+    const {pnd} = await pagerank(g, ew, o);
+    return pnd;
+  };
   return new StateTransitionMachine(
     getState,
     setState,
     loadGraphWithAdapters,
-    pagerank
+    modifiedPagerank
   );
 }
 

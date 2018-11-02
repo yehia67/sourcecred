@@ -1,6 +1,12 @@
 // @flow
 
-import {type Edge, Graph, NodeAddress, type NodeAddressT} from "../core/graph";
+import {
+  type Edge,
+  type EdgeAddressT,
+  Graph,
+  NodeAddress,
+  type NodeAddressT,
+} from "../core/graph";
 import {
   distributionToNodeDistribution,
   createConnections,
@@ -12,7 +18,7 @@ import {
   type PagerankNodeDecomposition,
 } from "./pagerankNodeDecomposition";
 
-import {scoreByConstantTotal} from "./nodeScore";
+import {type NodeScore, scoreByConstantTotal} from "./nodeScore";
 
 import {findStationaryDistribution} from "../core/attribution/markovChain";
 
@@ -32,7 +38,7 @@ export type PagerankOptions = {|
 export type {EdgeWeight} from "../core/attribution/graphToMarkovChain";
 export type EdgeEvaluator = (Edge) => EdgeWeight;
 
-function defaultOptions(): PagerankOptions {
+export function defaultOptions(): PagerankOptions {
   return {
     verbose: false,
     selfLoopWeight: 1e-3,
@@ -43,11 +49,16 @@ function defaultOptions(): PagerankOptions {
   };
 }
 
+export type HackyPagerankResult = {|
+  +pnd: PagerankNodeDecomposition,
+  +scores: NodeScore,
+  +edgeWeightsMap: Map<EdgeAddressT, EdgeWeight>,
+|};
 export async function pagerank(
   graph: Graph,
   edgeWeight: EdgeEvaluator,
   options?: PagerankOptions
-): Promise<PagerankNodeDecomposition> {
+): Promise<HackyPagerankResult> {
   const fullOptions = {
     ...defaultOptions(),
     ...(options || {}),
@@ -70,5 +81,10 @@ export async function pagerank(
     fullOptions.totalScore,
     fullOptions.totalScoreNodePrefix
   );
-  return decompose(scores, connections);
+  const edgeWeightsMap = new Map();
+  for (const edge of graph.edges()) {
+    edgeWeightsMap.set(edge.address, edgeWeight(edge));
+  }
+  const pnd = decompose(scores, connections);
+  return {pnd, scores, edgeWeightsMap};
 }
