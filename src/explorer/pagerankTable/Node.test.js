@@ -8,6 +8,7 @@ import {TableRow} from "./TableRow";
 import {AggregationRowList} from "./Aggregation";
 
 import type {NodeAddressT} from "../../core/graph";
+import type {NodeScore} from "../../analysis/nodeScore";
 
 import {nodeDescription} from "./shared";
 import {example} from "./sharedTestUtils";
@@ -18,16 +19,18 @@ require("../../webutil/testUtil").configureEnzyme();
 
 describe("explorer/pagerankTable/Node", () => {
   describe("NodeRowList", () => {
-    function sortedByScore(nodes: $ReadOnlyArray<NodeAddressT>, pnd) {
-      return sortBy(nodes, (node) => -NullUtil.get(pnd.get(node)).score);
+    function sortedByScore(
+      nodes: $ReadOnlyArray<NodeAddressT>,
+      scores: NodeScore
+    ) {
+      return sortBy(nodes, (node) => -NullUtil.get(scores.get(node)));
     }
     async function setup(maxEntriesPerList: number = 100000) {
-      const {adapters, pnd, weightedGraph, scores} = await example();
-      const nodes = Array.from(pnd.keys());
+      const {adapters, weightedGraph, scores} = await example();
+      const nodes = Array.from(scores.keys());
       expect(nodes).not.toHaveLength(0);
       const sharedProps = {
         adapters,
-        pnd,
         maxEntriesPerList,
         weightedGraph,
         scores,
@@ -58,29 +61,28 @@ describe("explorer/pagerankTable/Node", () => {
       const rowNodes = rows.map((row) => row.prop("node"));
       // Should have selected the right nodes.
       expect(rowNodes).toEqual(
-        sortedByScore(nodes, sharedProps.pnd).slice(0, maxEntriesPerList)
+        sortedByScore(nodes, sharedProps.scores).slice(0, maxEntriesPerList)
       );
     });
     it("sorts its children by score", async () => {
       const {
         element,
         nodes,
-        sharedProps: {pnd},
+        sharedProps: {scores},
       } = await setup();
-      expect(nodes).not.toEqual(sortedByScore(nodes, pnd));
+      expect(nodes).not.toEqual(sortedByScore(nodes, scores));
       const rows = element.find("NodeRow");
       const rowNodes = rows.map((row) => row.prop("node"));
-      expect(rowNodes).toEqual(sortedByScore(rowNodes, pnd));
+      expect(rowNodes).toEqual(sortedByScore(rowNodes, scores));
     });
   });
 
   describe("NodeRow", () => {
     async function setup(props: $Shape<{...NodeRowProps}>) {
       props = props || {};
-      const {pnd, adapters, weightedGraph, scores} = await example();
+      const {adapters, weightedGraph, scores} = await example();
       const sharedProps = {
         adapters,
-        pnd,
         maxEntriesPerList: 123,
         weightedGraph,
         scores,
@@ -112,7 +114,7 @@ describe("explorer/pagerankTable/Node", () => {
       });
       it("with the node's score as its cred", async () => {
         const {row, node, sharedProps} = await setup();
-        const score = NullUtil.get(sharedProps.pnd.get(node)).score;
+        const score = NullUtil.get(sharedProps.scores.get(node));
         expect(row.props().cred).toBe(score);
       });
       it("with no connectionProportion", async () => {

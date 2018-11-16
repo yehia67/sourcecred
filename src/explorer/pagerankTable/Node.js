@@ -19,10 +19,10 @@ type NodeRowListProps = {|
 export class NodeRowList extends React.PureComponent<NodeRowListProps> {
   render() {
     const {nodes, sharedProps} = this.props;
-    const {pnd, maxEntriesPerList} = sharedProps;
+    const {scores, maxEntriesPerList} = sharedProps;
     return (
       <React.Fragment>
-        {sortBy(nodes, (n) => -NullUtil.get(pnd.get(n)).score, (n) => n)
+        {sortBy(nodes, (n) => -NullUtil.get(scores.get(n)), (n) => n)
           .slice(0, maxEntriesPerList)
           .map((node) => (
             <NodeRow
@@ -48,8 +48,8 @@ export type NodeRowProps = {|
 export class NodeRow extends React.PureComponent<NodeRowProps> {
   render() {
     const {depth, node, sharedProps, showPadding} = this.props;
-    const {pnd, adapters} = sharedProps;
-    const {score} = NullUtil.get(pnd.get(node));
+    const {scores, adapters} = sharedProps;
+    const score = NullUtil.get(scores.get(node));
     const description = <span>{nodeDescription(node, adapters)}</span>;
     return (
       <TableRow

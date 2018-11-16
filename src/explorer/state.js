@@ -7,11 +7,7 @@ import type {WeightedGraph} from "../core/attribution/graphToMarkovChain";
 import type {Assets} from "../webutil/assets";
 import type {RepoId} from "../core/repoId";
 import {type EdgeEvaluator, type PagerankResult} from "../analysis/pagerank";
-import {
-  type PagerankNodeDecomposition,
-  type PagerankOptions,
-  pagerank,
-} from "../analysis/pagerank";
+import {type PagerankOptions, pagerank} from "../analysis/pagerank";
 
 import {StaticAdapterSet, DynamicAdapterSet} from "./adapters/adapterSet";
 import type {WeightedTypes} from "../analysis/weights";
@@ -47,7 +43,6 @@ export type PagerankEvaluated = {|
   +type: "PAGERANK_EVALUATED",
   +graphWithAdapters: GraphWithAdapters,
   +repoId: RepoId,
-  +pagerankNodeDecomposition: PagerankNodeDecomposition,
   +weightedGraph: WeightedGraph,
   +scores: NodeScore,
   +loading: LoadingState,
@@ -168,7 +163,7 @@ export class StateTransitionMachine implements StateTransitionMachineInterface {
     const graph = state.graphWithAdapters.graph;
     let newState: ?AppState;
     try {
-      const {pnd, scores, weightedGraph} = await this.pagerank(
+      const {scores, weightedGraph} = await this.pagerank(
         graph,
         weightsToEdgeEvaluator(weightedTypes),
         {
@@ -178,7 +173,6 @@ export class StateTransitionMachine implements StateTransitionMachineInterface {
       );
       newState = {
         type: "PAGERANK_EVALUATED",
-        pagerankNodeDecomposition: pnd,
         scores,
         weightedGraph,
         graphWithAdapters: state.graphWithAdapters,

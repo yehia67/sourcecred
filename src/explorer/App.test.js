@@ -79,7 +79,6 @@ describe("explorer/App", () => {
         repoId: makeRepoId("foo", "bar"),
         loading: loadingState,
         graphWithAdapters: {graph: new Graph(), adapters: emptyAdapters},
-        pagerankNodeDecomposition: new Map(),
         weightedGraph: {
           graph: new Graph(),
           edgeWeights: new Map(),
@@ -157,10 +156,8 @@ describe("explorer/App", () => {
             throw new Error("This test case is impossible to satisfy");
           }
           const adapters = state.graphWithAdapters.adapters;
-          const pnd = state.pagerankNodeDecomposition;
           const weightedTypes = el.instance().state.weightedTypes;
           expect(prt.props().adapters).toBe(adapters);
-          expect(prt.props().pnd).toBe(pnd);
           expect(prt.props().weightedTypes).toBe(weightedTypes);
           const prtWeightedTypesChange = prt.props().onWeightedTypesChange;
           const newTypes = defaultWeightsForAdapter(

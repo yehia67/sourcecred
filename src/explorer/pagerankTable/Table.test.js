@@ -16,13 +16,7 @@ require("../../webutil/testUtil").configureEnzyme();
 describe("explorer/pagerankTable/Table", () => {
   describe("PagerankTable", () => {
     async function setup(defaultNodeFilter?: NodeAddressT) {
-      const {
-        pnd,
-        adapters,
-        weightedTypes,
-        scores,
-        weightedGraph,
-      } = await example();
+      const {adapters, weightedTypes, scores, weightedGraph} = await example();
       const onWeightedTypesChange = jest.fn();
       const maxEntriesPerList = 321;
       const element = shallow(
@@ -30,7 +24,6 @@ describe("explorer/pagerankTable/Table", () => {
           defaultNodeFilter={defaultNodeFilter}
           weightedTypes={weightedTypes}
           onWeightedTypesChange={onWeightedTypesChange}
-          pnd={pnd}
           scores={scores}
           weightedGraph={weightedGraph}
           adapters={adapters}
@@ -38,7 +31,6 @@ describe("explorer/pagerankTable/Table", () => {
         />
       );
       return {
-        pnd,
         adapters,
         element,
         maxEntriesPerList,
@@ -162,7 +154,6 @@ describe("explorer/pagerankTable/Table", () => {
         const {
           element,
           adapters,
-          pnd,
           maxEntriesPerList,
           weightedGraph,
           scores,
@@ -170,7 +161,6 @@ describe("explorer/pagerankTable/Table", () => {
         const nrl = element.find(NodeRowList);
         const expectedSharedProps = {
           adapters,
-          pnd,
           maxEntriesPerList,
           weightedGraph,
           scores,
@@ -178,9 +168,9 @@ describe("explorer/pagerankTable/Table", () => {
         expect(nrl.props().sharedProps).toEqual(expectedSharedProps);
       });
       it("including all nodes by default", async () => {
-        const {element, pnd} = await setup();
+        const {element, scores} = await setup();
         const nrl = element.find(NodeRowList);
-        const expectedNodes = Array.from(pnd.keys());
+        const expectedNodes = Array.from(scores.keys());
         expect(nrl.props().nodes).toEqual(expectedNodes);
       });
     });

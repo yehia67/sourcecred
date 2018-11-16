@@ -4,6 +4,7 @@ import React from "react";
 import * as NullUtil from "../../util/null";
 
 import type {NodeAddressT} from "../../core/graph";
+import {decomposeNodeScore} from "../../analysis/pagerankNodeDecomposition";
 import {ConnectionRowList} from "./Connection";
 
 import {aggregateFlat, type FlatAggregation, aggregationKey} from "./aggregate";
@@ -22,8 +23,8 @@ export class AggregationRowList extends React.PureComponent<
 > {
   render() {
     const {depth, node, sharedProps} = this.props;
-    const {pnd, adapters} = sharedProps;
-    const {scoredConnections} = NullUtil.get(pnd.get(node));
+    const {adapters, weightedGraph, scores} = sharedProps;
+    const scoredConnections = decomposeNodeScore(weightedGraph, scores, node);
     const aggregations = aggregateFlat(
       scoredConnections,
       adapters.static().nodeTypes(),
@@ -55,9 +56,9 @@ type AggregationRowProps = {|
 export class AggregationRow extends React.PureComponent<AggregationRowProps> {
   render() {
     const {sharedProps, target, depth, aggregation} = this.props;
-    const {pnd} = sharedProps;
+    const {scores} = sharedProps;
     const score = aggregation.summary.score;
-    const {score: targetScore} = NullUtil.get(pnd.get(target));
+    const targetScore = NullUtil.get(scores.get(target));
     const connectionProportion = score / targetScore;
 
     return (

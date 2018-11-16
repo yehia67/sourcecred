@@ -6,13 +6,11 @@ import {
   type NodeAddressT,
   NodeAddress,
 } from "../../core/graph";
-
 import type {WeightedGraph} from "../../core/attribution/graphToMarkovChain";
+
 import type {NodeScore} from "../../analysis/nodeScore";
 
 import {DynamicAdapterSet} from "../adapters/adapterSet";
-
-import type {PagerankNodeDecomposition} from "../../analysis/pagerankNodeDecomposition";
 
 export function nodeDescription(
   address: NodeAddressT,
@@ -40,7 +38,6 @@ export function edgeVerb(
 export type SharedProps = {|
   +weightedGraph: WeightedGraph,
   +scores: NodeScore,
-  +pnd: PagerankNodeDecomposition,
   +adapters: DynamicAdapterSet,
   +maxEntriesPerList: number,
 |};

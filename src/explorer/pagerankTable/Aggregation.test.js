@@ -17,24 +17,24 @@ import {example} from "./sharedTestUtils";
 import {aggregateFlat, type FlatAggregation} from "./aggregate";
 import {TableRow} from "./TableRow";
 import {nodes as factorioNodes} from "../../plugins/demo/graph";
+import {decomposeNodeScore} from "../../analysis/pagerankNodeDecomposition";
 
 require("../../webutil/testUtil").configureEnzyme();
 
 describe("explorer/pagerankTable/Aggregation", () => {
   describe("AggregationRowList", () => {
     it("instantiates AggregationRows for each aggregation", async () => {
-      const {adapters, pnd, weightedGraph, scores} = await example();
+      const {adapters, weightedGraph, scores} = await example();
       const node = factorioNodes.inserter1;
       const depth = 20;
       const maxEntriesPerList = 50;
       const sharedProps = {
         adapters,
-        pnd,
         maxEntriesPerList,
         weightedGraph,
         scores,
       };
-      const connections = NullUtil.get(pnd.get(node)).scoredConnections;
+      const connections = decomposeNodeScore(weightedGraph, scores, node);
       const aggregations = aggregateFlat(
         connections,
         adapters.static().nodeTypes(),
@@ -64,16 +64,19 @@ describe("explorer/pagerankTable/Aggregation", () => {
 
   describe("AggregationRow", () => {
     async function setup() {
-      const {pnd, weightedGraph, scores, adapters} = await example();
+      const {weightedGraph, scores, adapters} = await example();
       const sharedProps = {
         adapters,
-        pnd,
         weightedGraph,
         scores,
         maxEntriesPerList: 123,
       };
       const target = factorioNodes.inserter1;
-      const {scoredConnections} = NullUtil.get(pnd.get(target));
+      const scoredConnections = decomposeNodeScore(
+        weightedGraph,
+        scores,
+        target
+      );
       const aggregations = aggregateFlat(
         scoredConnections,
         adapters.static().nodeTypes(),
@@ -119,7 +122,7 @@ describe("explorer/pagerankTable/Aggregation", () => {
       });
       it("with the aggregation's contribution proportion", async () => {
         const {row, target, aggregation, sharedProps} = await setup();
-        const targetScore = NullUtil.get(sharedProps.pnd.get(target)).score;
+        const targetScore = NullUtil.get(sharedProps.scores.get(target));
         expect(row.props().connectionProportion).toBe(
           aggregation.summary.score / targetScore
         );

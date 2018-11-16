@@ -62,7 +62,6 @@ describe("explorer/state", () => {
       type: "PAGERANK_EVALUATED",
       repoId: makeRepoId("foo", "bar"),
       graphWithAdapters: graphWithAdapters(),
-      pagerankNodeDecomposition: pagerankNodeDecomposition(),
       scores: new Map(),
       weightedGraph: weightedGraph(),
       loading: "NOT_LOADING",
@@ -83,9 +82,6 @@ describe("explorer/state", () => {
       edgeWeights: new Map(),
       selfLoopWeight: 0.01,
     };
-  }
-  function pagerankNodeDecomposition() {
-    return new Map();
   }
   function loading(state: AppState) {
     return state.loading;
@@ -170,7 +166,6 @@ describe("explorer/state", () => {
       for (const g of goodStates) {
         const {stm, getState, pagerankMock} = example(g);
         const pagerankResult = {
-          pnd: new Map(),
           weightedGraph: weightedGraph(),
           scores: new Map(),
         };
@@ -181,7 +176,6 @@ describe("explorer/state", () => {
           throw new Error("Impossible");
         }
         expect(state.type).toBe("PAGERANK_EVALUATED");
-        expect(state.pagerankNodeDecomposition).toBe(pagerankResult.pnd);
         expect(state.weightedGraph).toBe(pagerankResult.weightedGraph);
         expect(state.scores).toBe(pagerankResult.scores);
       }

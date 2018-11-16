@@ -10,30 +10,29 @@ import {example} from "./sharedTestUtils";
 import {TableRow} from "./TableRow";
 import {NodeRow} from "./Node";
 import {nodes as factorioNodes} from "../../plugins/demo/graph";
+import {decomposeNodeScore} from "../../analysis/pagerankNodeDecomposition";
 
 require("../../webutil/testUtil").configureEnzyme();
 
 describe("explorer/pagerankTable/Connection", () => {
   describe("ConnectionRowList", () => {
     async function setup(maxEntriesPerList: number = 100000) {
-      const {adapters, pnd, weightedGraph, scores} = await example();
+      const {adapters, weightedGraph, scores} = await example();
       const depth = 2;
       const node = factorioNodes.inserter1;
       const sharedProps = {
         adapters,
-        pnd,
         maxEntriesPerList,
         weightedGraph,
         scores,
       };
-      const connections = NullUtil.get(sharedProps.pnd.get(node))
-        .scoredConnections;
+      const scoredConnections = decomposeNodeScore(weightedGraph, scores, node);
       const component = (
         <ConnectionRowList
           depth={depth}
           node={node}
           sharedProps={sharedProps}
-          connections={connections}
+          connections={scoredConnections}
         />
       );
       const element = shallow(component);
@@ -41,8 +40,8 @@ describe("explorer/pagerankTable/Connection", () => {
     }
     it("creates `ConnectionRow`s with the right props", async () => {
       const {element, depth, node, sharedProps} = await setup();
-      const connections = NullUtil.get(sharedProps.pnd.get(node))
-        .scoredConnections;
+      const {weightedGraph, scores} = sharedProps;
+      const connections = decomposeNodeScore(weightedGraph, scores, node);
       const rows = element.find("ConnectionRow");
       expect(rows).toHaveLength(connections.length);
       const rowPropses = rows.map((row) => row.props());
@@ -59,8 +58,8 @@ describe("explorer/pagerankTable/Connection", () => {
     it("limits the number of rows by `maxEntriesPerList`", async () => {
       const maxEntriesPerList = 1;
       const {element, node, sharedProps} = await setup(maxEntriesPerList);
-      const connections = NullUtil.get(sharedProps.pnd.get(node))
-        .scoredConnections;
+      const {weightedGraph, scores} = sharedProps;
+      const connections = decomposeNodeScore(weightedGraph, scores, node);
       expect(connections.length).toBeGreaterThan(maxEntriesPerList);
       const rows = element.find("ConnectionRow");
       expect(rows).toHaveLength(maxEntriesPerList);
@@ -72,16 +71,19 @@ describe("explorer/pagerankTable/Connection", () => {
 
   describe("ConnectionRow", () => {
     async function setup() {
-      const {pnd, adapters, weightedGraph, scores} = await example();
+      const {adapters, weightedGraph, scores} = await example();
       const sharedProps = {
         adapters,
-        pnd,
         maxEntriesPerList: 123,
         weightedGraph,
         scores,
       };
       const target = factorioNodes.inserter1;
-      const {scoredConnections} = NullUtil.get(pnd.get(target));
+      const scoredConnections = decomposeNodeScore(
+        weightedGraph,
+        scores,
+        target
+      );
       const scoredConnection = scoredConnections[0];
       const depth = 2;
       const component = (
@@ -114,7 +116,7 @@ describe("explorer/pagerankTable/Connection", () => {
       });
       it("with the connectionProportion", async () => {
         const {row, target, scoredConnection, sharedProps} = await setup();
-        const targetScore = NullUtil.get(sharedProps.pnd.get(target)).score;
+        const targetScore = NullUtil.get(sharedProps.scores.get(target));
         expect(row.props().connectionProportion).toBe(
           scoredConnection.connectionScore / targetScore
         );
@@ -158,8 +160,12 @@ describe("explorer/pagerankTable/Connection", () => {
   });
   describe("ConnectionView", () => {
     async function setup() {
-      const {pnd, adapters} = await example();
-      const {scoredConnections} = NullUtil.get(pnd.get(factorioNodes.machine1));
+      const {weightedGraph, scores, adapters} = await example();
+      const scoredConnections = decomposeNodeScore(
+        weightedGraph,
+        scores,
+        factorioNodes.machine1
+      );
       const connections = scoredConnections.map((sc) => sc.connection);
       function connectionByType(t) {
         return NullUtil.get(
@@ -178,7 +184,6 @@ describe("explorer/pagerankTable/Connection", () => {
       return {
         adapters,
         connections,
-        pnd,
         cvForConnection,
         inConnection,
         outConnection,

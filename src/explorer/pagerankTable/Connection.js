@@ -58,8 +58,8 @@ export class ConnectionRow extends React.PureComponent<ConnectionRowProps> {
       depth,
       scoredConnection: {connection, source, connectionScore},
     } = this.props;
-    const {pnd, adapters} = sharedProps;
-    const {score: targetScore} = NullUtil.get(pnd.get(target));
+    const {scores, adapters} = sharedProps;
+    const targetScore = NullUtil.get(scores.get(target));
     const connectionProportion = connectionScore / targetScore;
 
     const connectionView = (

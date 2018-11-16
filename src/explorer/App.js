@@ -88,7 +88,6 @@ export function createApp(
       let pagerankTable;
       if (appState.type === "PAGERANK_EVALUATED") {
         const adapters = appState.graphWithAdapters.adapters;
-        const pnd = appState.pagerankNodeDecomposition;
         pagerankTable = (
           <PagerankTable
             defaultNodeFilter={GithubPrefix.user}
@@ -97,7 +96,6 @@ export function createApp(
             onWeightedTypesChange={(weightedTypes) =>
               this.setState({weightedTypes})
             }
-            pnd={pnd}
             weightedGraph={appState.weightedGraph}
             scores={appState.scores}
             maxEntriesPerList={100}

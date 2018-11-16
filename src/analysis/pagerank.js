@@ -9,10 +9,6 @@ import {
   createWeightedGraph,
   type WeightedGraph,
 } from "../core/attribution/graphToMarkovChain";
-import {
-  decompose,
-  type PagerankNodeDecomposition,
-} from "./pagerankNodeDecomposition";
 
 import {type NodeScore, scoreByConstantTotal} from "./nodeScore";
 
@@ -35,7 +31,6 @@ export type {EdgeWeight} from "../core/attribution/graphToMarkovChain";
 export type EdgeEvaluator = (Edge) => EdgeWeight;
 
 export type PagerankResult = {|
-  +pnd: PagerankNodeDecomposition,
   +weightedGraph: WeightedGraph,
   +scores: NodeScore,
 |};
@@ -79,6 +74,5 @@ export async function pagerank(
     fullOptions.totalScore,
     fullOptions.totalScoreNodePrefix
   );
-  const pnd = decompose(scores, connections);
-  return {pnd, weightedGraph, scores};
+  return {weightedGraph, scores};
 }
