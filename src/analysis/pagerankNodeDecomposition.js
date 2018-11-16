@@ -7,6 +7,8 @@ import {
   type Connection,
   type NodeToConnections,
   adjacencySource,
+  type WeightedGraph,
+  singleNodeConnections,
 } from "../core/attribution/graphToMarkovChain";
 import type {NodeScore} from "./nodeScore";
 import * as MapUtil from "../util/map";
@@ -60,4 +62,34 @@ export function decompose(
     );
     return {score, scoredConnections};
   });
+}
+
+// decomposeNodeScore gives you the ScoredConnections for a particular node.
+// Thus, `decomposeNodeScore(wg, scores, n)` is equivalent to
+// `decompose(scores, createConnections(wg)).get(n).scoredConnections` If you
+// only need the decomposition for a single node, then calling
+// decomposeNodeScore is much more efficient.
+export function decomposeNodeScore(
+  wg: WeightedGraph,
+  scores: NodeScore,
+  target: NodeAddressT
+): ScoredConnection[] {
+  const connections = singleNodeConnections(wg, target);
+  const scoredConnections: ScoredConnection[] = connections.map(
+    (connection) => {
+      const source = adjacencySource(target, connection.adjacency);
+      const sourceScore = NullUtil.get(scores.get(source));
+      const connectionScore = connection.weight * sourceScore;
+      return {connection, source, connectionScore};
+    }
+  );
+  return sortBy(
+    scoredConnections,
+    (x) => -x.connectionScore,
+    (x) => x.connection.adjacency.type,
+    (x) =>
+      x.connection.adjacency.type === "SYNTHETIC_LOOP"
+        ? ""
+        : x.connection.adjacency.edge.address
+  );
 }

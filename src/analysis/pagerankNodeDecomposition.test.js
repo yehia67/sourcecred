@@ -1,6 +1,12 @@
 // @flow
 
-import {EdgeAddress, Graph, NodeAddress, edgeToStrings} from "../core/graph";
+import {
+  EdgeAddress,
+  type Edge,
+  Graph,
+  NodeAddress,
+  edgeToStrings,
+} from "../core/graph";
 import {
   distributionToNodeDistribution,
   createConnections,
@@ -8,8 +14,9 @@ import {
   createWeightedGraph,
 } from "../core/attribution/graphToMarkovChain";
 import {findStationaryDistribution} from "../core/attribution/markovChain";
-import {decompose} from "./pagerankNodeDecomposition";
+import {decompose, decomposeNodeScore} from "./pagerankNodeDecomposition";
 import * as MapUtil from "../util/map";
+import * as NullUtil from "../util/null";
 
 import {advancedGraph} from "../core/graphTestUtil";
 
@@ -157,6 +164,28 @@ describe("analysis/pagerankNodeDecomposition", () => {
       const pr = distributionToNodeDistribution(osmc.nodeOrder, pi);
       const result = decompose(pr, connections);
       validateDecomposition(result);
+    });
+  });
+
+  describe("decomposeNodeScore", () => {
+    it("is equivalent to calling `decompose` on a per-node basis", async () => {
+      const g = advancedGraph().graph1();
+      const ee = (_unused_edge: Edge) => ({toWeight: 0.3, froWeight: 0.9});
+      const wg = createWeightedGraph(g, ee, 0.001);
+      const connections = createConnections(wg);
+      const osmc = createOrderedSparseMarkovChain(connections);
+      const pi = await findStationaryDistribution(osmc.chain, {
+        verbose: false,
+        convergenceThreshold: 1e-6,
+        maxIterations: 255,
+        yieldAfterMs: 1,
+      });
+      const pr = distributionToNodeDistribution(osmc.nodeOrder, pi);
+      const fullDecomposition = decompose(pr, connections);
+      for (const n of g.nodes()) {
+        const actual = NullUtil.get(fullDecomposition.get(n)).scoredConnections;
+        expect(decomposeNodeScore(wg, pr, n)).toEqual(actual);
+      }
     });
   });
 });
