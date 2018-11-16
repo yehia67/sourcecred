@@ -64,8 +64,14 @@ describe("explorer/pagerankTable/Aggregation", () => {
 
   describe("AggregationRow", () => {
     async function setup() {
-      const {pnd, adapters} = await example();
-      const sharedProps = {adapters, pnd, maxEntriesPerList: 123};
+      const {pnd, weightedGraph, scores, adapters} = await example();
+      const sharedProps = {
+        adapters,
+        pnd,
+        weightedGraph,
+        scores,
+        maxEntriesPerList: 123,
+      };
       const target = factorioNodes.inserter1;
       const {scoredConnections} = NullUtil.get(pnd.get(target));
       const aggregations = aggregateFlat(

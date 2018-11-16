@@ -98,6 +98,8 @@ export function createApp(
               this.setState({weightedTypes})
             }
             pnd={pnd}
+            weightedGraph={appState.weightedGraph}
+            scores={appState.scores}
             maxEntriesPerList={100}
           />
         );

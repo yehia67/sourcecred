@@ -80,6 +80,12 @@ describe("explorer/App", () => {
         loading: loadingState,
         graphWithAdapters: {graph: new Graph(), adapters: emptyAdapters},
         pagerankNodeDecomposition: new Map(),
+        weightedGraph: {
+          graph: new Graph(),
+          edgeWeights: new Map(),
+          selfLoopWeight: 0.01,
+        },
+        scores: new Map(),
       });
     },
   };

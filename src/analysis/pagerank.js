@@ -14,7 +14,7 @@ import {
   type PagerankNodeDecomposition,
 } from "./pagerankNodeDecomposition";
 
-import {scoreByConstantTotal} from "./nodeScore";
+import {type NodeScore, scoreByConstantTotal} from "./nodeScore";
 
 import {findStationaryDistribution} from "../core/attribution/markovChain";
 
@@ -35,8 +35,9 @@ export type {EdgeWeight} from "../core/attribution/graphToMarkovChain";
 export type EdgeEvaluator = (Edge) => EdgeWeight;
 
 export type PagerankResult = {|
+  +pnd: PagerankNodeDecomposition,
   +weightedGraph: WeightedGraph,
-  +nodeScores: Map<NodeAddressT, number>,
+  +scores: NodeScore,
 |};
 
 function defaultOptions(): PagerankOptions {
@@ -54,7 +55,7 @@ export async function pagerank(
   graph: Graph,
   edgeWeight: EdgeEvaluator,
   options?: PagerankOptions
-): Promise<PagerankNodeDecomposition> {
+): Promise<PagerankResult> {
   const fullOptions = {
     ...defaultOptions(),
     ...(options || {}),
@@ -79,4 +80,5 @@ export async function pagerank(
     fullOptions.totalScoreNodePrefix
   );
   const pnd = decompose(scores, connections);
+  return {pnd, weightedGraph, scores};
 }

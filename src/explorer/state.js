@@ -3,9 +3,10 @@
 import deepEqual from "lodash.isequal";
 
 import {Graph, type NodeAddressT} from "../core/graph";
+import type {WeightedGraph} from "../core/attribution/graphToMarkovChain";
 import type {Assets} from "../webutil/assets";
 import type {RepoId} from "../core/repoId";
-import {type EdgeEvaluator} from "../analysis/pagerank";
+import {type EdgeEvaluator, type PagerankResult} from "../analysis/pagerank";
 import {
   type PagerankNodeDecomposition,
   type PagerankOptions,
@@ -14,6 +15,7 @@ import {
 
 import {StaticAdapterSet, DynamicAdapterSet} from "./adapters/adapterSet";
 import type {WeightedTypes} from "../analysis/weights";
+import type {NodeScore} from "../analysis/nodeScore";
 import {weightsToEdgeEvaluator} from "../analysis/weightsToEdgeEvaluator";
 
 /*
@@ -46,6 +48,8 @@ export type PagerankEvaluated = {|
   +graphWithAdapters: GraphWithAdapters,
   +repoId: RepoId,
   +pagerankNodeDecomposition: PagerankNodeDecomposition,
+  +weightedGraph: WeightedGraph,
+  +scores: NodeScore,
   +loading: LoadingState,
 |};
 
@@ -88,11 +92,7 @@ export class StateTransitionMachine implements StateTransitionMachineInterface {
     adapters: StaticAdapterSet,
     repoId: RepoId
   ) => Promise<GraphWithAdapters>;
-  pagerank: (
-    Graph,
-    EdgeEvaluator,
-    PagerankOptions
-  ) => Promise<PagerankNodeDecomposition>;
+  pagerank: (Graph, EdgeEvaluator, PagerankOptions) => Promise<PagerankResult>;
 
   constructor(
     getState: () => AppState,
@@ -102,11 +102,7 @@ export class StateTransitionMachine implements StateTransitionMachineInterface {
       adapters: StaticAdapterSet,
       repoId: RepoId
     ) => Promise<GraphWithAdapters>,
-    pagerank: (
-      Graph,
-      EdgeEvaluator,
-      PagerankOptions
-    ) => Promise<PagerankNodeDecomposition>
+    pagerank: (Graph, EdgeEvaluator, PagerankOptions) => Promise<PagerankResult>
   ) {
     this.getState = getState;
     this.setState = setState;
@@ -172,7 +168,7 @@ export class StateTransitionMachine implements StateTransitionMachineInterface {
     const graph = state.graphWithAdapters.graph;
     let newState: ?AppState;
     try {
-      const pagerankNodeDecomposition = await this.pagerank(
+      const {pnd, scores, weightedGraph} = await this.pagerank(
         graph,
         weightsToEdgeEvaluator(weightedTypes),
         {
@@ -182,7 +178,9 @@ export class StateTransitionMachine implements StateTransitionMachineInterface {
       );
       newState = {
         type: "PAGERANK_EVALUATED",
-        pagerankNodeDecomposition,
+        pagerankNodeDecomposition: pnd,
+        scores,
+        weightedGraph,
         graphWithAdapters: state.graphWithAdapters,
         repoId: state.repoId,
         loading: "NOT_LOADING",

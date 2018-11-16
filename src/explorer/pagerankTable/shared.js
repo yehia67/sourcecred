@@ -7,6 +7,7 @@ import {
   NodeAddress,
 } from "../../core/graph";
 
+import type {WeightedGraph} from "../../core/attribution/graphToMarkovChain";
 import type {NodeScore} from "../../analysis/nodeScore";
 
 import {DynamicAdapterSet} from "../adapters/adapterSet";

@@ -5,7 +5,9 @@ import sortBy from "lodash.sortby";
 import * as NullUtil from "../../util/null";
 
 import {type NodeAddressT, NodeAddress} from "../../core/graph";
+import type {WeightedGraph} from "../../core/attribution/graphToMarkovChain";
 import type {PagerankNodeDecomposition} from "../../analysis/pagerankNodeDecomposition";
+import type {NodeScore} from "../../analysis/nodeScore";
 import {DynamicAdapterSet} from "../adapters/adapterSet";
 import type {DynamicAppAdapter} from "../adapters/appAdapter";
 import {FALLBACK_NAME} from "../../analysis/fallbackDeclaration";
@@ -16,6 +18,8 @@ import {NodeRowList} from "./Node";
 
 type PagerankTableProps = {|
   +pnd: PagerankNodeDecomposition,
+  +weightedGraph: WeightedGraph,
+  +scores: NodeScore,
   +adapters: DynamicAdapterSet,
   +weightedTypes: WeightedTypes,
   +onWeightedTypesChange: (WeightedTypes) => void,
@@ -134,12 +138,24 @@ export class PagerankTable extends React.PureComponent<
   }
 
   renderTable() {
-    const {pnd, adapters, maxEntriesPerList} = this.props;
+    const {
+      pnd,
+      adapters,
+      maxEntriesPerList,
+      weightedGraph,
+      scores,
+    } = this.props;
     if (pnd == null || adapters == null || maxEntriesPerList == null) {
       throw new Error("Impossible.");
     }
     const topLevelFilter = this.state.topLevelFilter;
-    const sharedProps = {pnd, adapters, maxEntriesPerList};
+    const sharedProps = {
+      pnd,
+      adapters,
+      maxEntriesPerList,
+      weightedGraph,
+      scores,
+    };
     return (
       <table
         style={{

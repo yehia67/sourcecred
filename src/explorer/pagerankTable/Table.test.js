@@ -16,7 +16,13 @@ require("../../webutil/testUtil").configureEnzyme();
 describe("explorer/pagerankTable/Table", () => {
   describe("PagerankTable", () => {
     async function setup(defaultNodeFilter?: NodeAddressT) {
-      const {pnd, adapters, weightedTypes} = await example();
+      const {
+        pnd,
+        adapters,
+        weightedTypes,
+        scores,
+        weightedGraph,
+      } = await example();
       const onWeightedTypesChange = jest.fn();
       const maxEntriesPerList = 321;
       const element = shallow(
@@ -25,11 +31,21 @@ describe("explorer/pagerankTable/Table", () => {
           weightedTypes={weightedTypes}
           onWeightedTypesChange={onWeightedTypesChange}
           pnd={pnd}
+          scores={scores}
+          weightedGraph={weightedGraph}
           adapters={adapters}
           maxEntriesPerList={maxEntriesPerList}
         />
       );
-      return {pnd, adapters, element, maxEntriesPerList, onWeightedTypesChange};
+      return {
+        pnd,
+        adapters,
+        element,
+        maxEntriesPerList,
+        onWeightedTypesChange,
+        weightedGraph,
+        scores,
+      };
     }
     it("renders thead column order properly", async () => {
       const {element} = await setup();
@@ -143,9 +159,22 @@ describe("explorer/pagerankTable/Table", () => {
 
     describe("creates a NodeRowList", () => {
       it("with the correct SharedProps", async () => {
-        const {element, adapters, pnd, maxEntriesPerList} = await setup();
+        const {
+          element,
+          adapters,
+          pnd,
+          maxEntriesPerList,
+          weightedGraph,
+          scores,
+        } = await setup();
         const nrl = element.find(NodeRowList);
-        const expectedSharedProps = {adapters, pnd, maxEntriesPerList};
+        const expectedSharedProps = {
+          adapters,
+          pnd,
+          maxEntriesPerList,
+          weightedGraph,
+          scores,
+        };
         expect(nrl.props().sharedProps).toEqual(expectedSharedProps);
       });
       it("including all nodes by default", async () => {

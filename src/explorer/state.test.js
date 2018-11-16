@@ -9,14 +9,12 @@ import {
 import {Graph, NodeAddress} from "../core/graph";
 import {Assets} from "../webutil/assets";
 import {makeRepoId, type RepoId} from "../core/repoId";
-import {type EdgeEvaluator} from "../analysis/pagerank";
+import type {EdgeEvaluator} from "../analysis/pagerank";
+import type {WeightedGraph} from "../core/attribution/graphToMarkovChain";
 import type {WeightedTypes} from "../analysis/weights";
 import {defaultWeightsForAdapterSet} from "./weights/weights";
 import {StaticAdapterSet, DynamicAdapterSet} from "./adapters/adapterSet";
-import type {
-  PagerankNodeDecomposition,
-  PagerankOptions,
-} from "../analysis/pagerank";
+import type {PagerankResult, PagerankOptions} from "../analysis/pagerank";
 import {staticAdapterSet} from "../plugins/demo/appAdapter";
 
 describe("explorer/state", () => {
@@ -35,7 +33,7 @@ describe("explorer/state", () => {
       Graph,
       EdgeEvaluator,
       PagerankOptions
-    ) => Promise<PagerankNodeDecomposition> = jest.fn();
+    ) => Promise<PagerankResult> = jest.fn();
     const stm = new StateTransitionMachine(
       getState,
       setState,
@@ -65,6 +63,8 @@ describe("explorer/state", () => {
       repoId: makeRepoId("foo", "bar"),
       graphWithAdapters: graphWithAdapters(),
       pagerankNodeDecomposition: pagerankNodeDecomposition(),
+      scores: new Map(),
+      weightedGraph: weightedGraph(),
       loading: "NOT_LOADING",
     };
   }
@@ -75,6 +75,13 @@ describe("explorer/state", () => {
     return {
       graph: new Graph(),
       adapters: new DynamicAdapterSet(new StaticAdapterSet([]), []),
+    };
+  }
+  function weightedGraph(): WeightedGraph {
+    return {
+      graph: new Graph(),
+      edgeWeights: new Map(),
+      selfLoopWeight: 0.01,
     };
   }
   function pagerankNodeDecomposition() {
@@ -162,15 +169,21 @@ describe("explorer/state", () => {
       const goodStates = [readyToRunPagerank(), pagerankEvaluated()];
       for (const g of goodStates) {
         const {stm, getState, pagerankMock} = example(g);
-        const pnd = pagerankNodeDecomposition();
-        pagerankMock.mockResolvedValue(pnd);
+        const pagerankResult = {
+          pnd: new Map(),
+          weightedGraph: weightedGraph(),
+          scores: new Map(),
+        };
+        pagerankMock.mockResolvedValue(pagerankResult);
         await stm.runPagerank(weightedTypes(), NodeAddress.empty);
         const state = getState();
         if (state.type !== "PAGERANK_EVALUATED") {
           throw new Error("Impossible");
         }
         expect(state.type).toBe("PAGERANK_EVALUATED");
-        expect(state.pagerankNodeDecomposition).toBe(pnd);
+        expect(state.pagerankNodeDecomposition).toBe(pagerankResult.pnd);
+        expect(state.weightedGraph).toBe(pagerankResult.weightedGraph);
+        expect(state.scores).toBe(pagerankResult.scores);
       }
     });
     it("immediately sets loading status", () => {

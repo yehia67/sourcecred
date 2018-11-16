@@ -16,10 +16,16 @@ require("../../webutil/testUtil").configureEnzyme();
 describe("explorer/pagerankTable/Connection", () => {
   describe("ConnectionRowList", () => {
     async function setup(maxEntriesPerList: number = 100000) {
-      const {adapters, pnd} = await example();
+      const {adapters, pnd, weightedGraph, scores} = await example();
       const depth = 2;
       const node = factorioNodes.inserter1;
-      const sharedProps = {adapters, pnd, maxEntriesPerList};
+      const sharedProps = {
+        adapters,
+        pnd,
+        maxEntriesPerList,
+        weightedGraph,
+        scores,
+      };
       const connections = NullUtil.get(sharedProps.pnd.get(node))
         .scoredConnections;
       const component = (
@@ -66,8 +72,14 @@ describe("explorer/pagerankTable/Connection", () => {
 
   describe("ConnectionRow", () => {
     async function setup() {
-      const {pnd, adapters} = await example();
-      const sharedProps = {adapters, pnd, maxEntriesPerList: 123};
+      const {pnd, adapters, weightedGraph, scores} = await example();
+      const sharedProps = {
+        adapters,
+        pnd,
+        maxEntriesPerList: 123,
+        weightedGraph,
+        scores,
+      };
       const target = factorioNodes.inserter1;
       const {scoredConnections} = NullUtil.get(pnd.get(target));
       const scoredConnection = scoredConnections[0];
