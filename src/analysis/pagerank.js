@@ -7,6 +7,7 @@ import {
   createOrderedSparseMarkovChain,
   type EdgeWeight,
   createWeightedGraph,
+  type WeightedGraph,
 } from "../core/attribution/graphToMarkovChain";
 import {
   decompose,
@@ -32,6 +33,11 @@ export type PagerankOptions = {|
 
 export type {EdgeWeight} from "../core/attribution/graphToMarkovChain";
 export type EdgeEvaluator = (Edge) => EdgeWeight;
+
+export type PagerankResult = {|
+  +weightedGraph: WeightedGraph,
+  +nodeScores: Map<NodeAddressT, number>,
+|};
 
 function defaultOptions(): PagerankOptions {
   return {
@@ -72,5 +78,5 @@ export async function pagerank(
     fullOptions.totalScore,
     fullOptions.totalScoreNodePrefix
   );
-  return decompose(scores, connections);
+  const pnd = decompose(scores, connections);
 }

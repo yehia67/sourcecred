@@ -7,6 +7,8 @@ import {
   NodeAddress,
 } from "../../core/graph";
 
+import type {NodeScore} from "../../analysis/nodeScore";
+
 import {DynamicAdapterSet} from "../adapters/adapterSet";
 
 import type {PagerankNodeDecomposition} from "../../analysis/pagerankNodeDecomposition";
@@ -35,6 +37,8 @@ export function edgeVerb(
 }
 
 export type SharedProps = {|
+  +weightedGraph: WeightedGraph,
+  +scores: NodeScore,
   +pnd: PagerankNodeDecomposition,
   +adapters: DynamicAdapterSet,
   +maxEntriesPerList: number,
